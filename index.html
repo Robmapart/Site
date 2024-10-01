@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte avec Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer;
+
+	
+        const texture = textureLoader.load(https://github.com/Robmapart/Site/blob/97f5f3054c2fafcb0d605b217c6a10e906a64650/identite%CC%81.jpg); // Remplacez le port si nécessaire
+
+
+
+
+		
+        // Tableau d'œuvres d'art
+        const artworks = [
+            { title: "Art 1", description: "Description of Art 1" },
+            { title: "Art 2", description: "Description of Art 2" },
+            { title: "Art 3", description: "Description of Art 3" },
+            { title: "Art 4", description: "Description of Art 4" },
+            { title: "Art 5", description: "Description of Art 5" },
+        ];
+
+        // Tableau pour stocker les sphères
+        const spheres = [];
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const geometry = new THREE.SphereGeometry(0.2, 32, 32);
+            const material = new THREE.MeshStandardMaterial({ map: texture });
+
+            // Création des sphères pour chaque œuvre d'art
+            for (let i = 0; i < artworks.length; i++) {
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10
+                );
+                sphere.userData = { index: i }; // Stocke l'index de l'œuvre dans les données utilisateur
+                scene.add(sphere);
+                spheres.push(sphere); // Ajoute la sphère au tableau
+            }
+
+            // Dessiner des connexions entre les sphères sélectionnées
+            connectSpheres();
+
+            animate();
+        }
+
+        function connectSpheres() {
+            // Exemple: connecte uniquement les sphères avec les index 0 et 1
+            const connections = [
+                [0, 1], // Connexion entre la sphère 0 et la sphère 1
+                [2, 3], // Connexion entre la sphère 2 et la sphère 3
+                // Ajoutez d'autres paires ici si nécessaire
+            ];
+
+            connections.forEach(pair => {
+                const points = [];
+                points.push(spheres[pair[0]].position.clone());
+                points.push(spheres[pair[1]].position.clone());
+
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+                const line = new THREE.Line(geometry, lineMaterial);
+                scene.add(line);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Détecter les clics sur les sphères
+        window.addEventListener('click', (event) => {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(spheres);
+            if (intersects.length > 0) {
+                const index = intersects[0].object.userData.index; // Récupère l'index de l'œuvre
+                alert(`${artworks[index].title}\n${artworks[index].description}`); // Affiche le titre et la description
+            }
+        });
+
+        init(); // Initialisation de la scène
+    </script>
+</body>
+</html>
